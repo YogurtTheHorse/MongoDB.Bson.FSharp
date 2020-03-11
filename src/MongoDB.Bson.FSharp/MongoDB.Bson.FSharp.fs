@@ -165,8 +165,7 @@ type DiscriminatedUnionSerializer<'t>() =
         BsonSerializer.LookupSerializer(t).Deserialize(context, args)
 
     let serBy context args t v =
-        let ser = BsonSerializer.LookupSerializer(t)
-        ser.Serialize(context, args, v)
+        BsonSerializer.LookupSerializer(t).Serialize(context, args, v)
 
     let readItems context args types =
         types
