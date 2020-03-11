@@ -4,6 +4,11 @@ type TestResult<'a> =
     | Failure
     | Result of cause: string * nr : 'a
     | NoResults of string
+    
+type TestRecord =
+    {
+      Foo: string
+    }
 type TestItem =
     {
       Id : int
@@ -12,6 +17,7 @@ type TestItem =
       Array : int array
       RecursiveOpt : TestItem option
       Union : TestResult<int>
+      ComplexUnion : TestResult<TestRecord>
       MapStringInt : Map<string,int>
       MapIntString : Map<int,string>
       SetInt: int Set
@@ -30,6 +36,7 @@ let testItem =
         Array = [|10;20;30|]
         RecursiveOpt = None
         Union = Result ("just", 5)
+        ComplexUnion = Result ("bar", {Foo = "foo"})
         MapStringInt = [("one", 1);("two", 2)] |> Map.ofList
         MapIntString = [(5, "five"); (1, "one")] |> Map.ofList
         SetInt = Set.empty
@@ -49,6 +56,7 @@ let testItems =
                     Array = [||]
                     RecursiveOpt = Some parent
                     Union = NoResults "just because"
+                    ComplexUnion = NoResults "tested already"
                     MapIntString = Map.empty
                     MapStringInt = Map.empty
                     SetInt = [9;8;7] |> Set.ofList
