@@ -129,39 +129,31 @@ type DictionaryRepresentationConvention(representation : DictionaryRepresentatio
             |> ignore
 
 
-// type RecordSerializer<'TRecord>() =
+ type RecordSerializer<'TRecord>() =
 
-//     inherit SerializerBase<'TRecord>()
-//     let classMap = BsonClassMap.LookupClassMap(typeof<'TRecord>)
-//     let serializer = BsonClassMapSerializer(classMap)
-//     let fields = GetRecordFields typeof<'TRecord>
+     inherit SerializerBase<'TRecord>()
+     let classMap = BsonClassMap.LookupClassMap(typeof<'TRecord>)
+     let serializer = BsonClassMapSerializer(classMap)
+     let fields = GetRecordFields typeof<'TRecord>
 
-//     override this.Serialize(context, args, value) =
-//         let recordType =
-//             let t = typeof<'TRecord>
-//             printfn "deserialize record %A = %A" t.Name value
-//             t
-//         let mutable nargs = args
-//         nargs.NominalType <- typeof<'TRecord>
-//         serializer.Serialize(context, nargs, value)
+     override this.Serialize(context, args, value) =
+         let mutable nargs = args
+         nargs.NominalType <- typeof<'TRecord>
+         serializer.Serialize(context, nargs, value)
 
-//     override this.Deserialize(context, args) =
-//         let recordType =
-//             let t = typeof<'TRecord>
-//             printfn "deserialize record %A" t.Name
-//             t
-//         let mutable nargs = args
-//         nargs.NominalType <- typeof<'TRecord>
-//         serializer.Deserialize(context, nargs)
+     override this.Deserialize(context, args) =
+         let mutable nargs = args
+         nargs.NominalType <- typeof<'TRecord>
+         serializer.Deserialize(context, nargs)
 
-//     interface IBsonDocumentSerializer with
-//         member x.TryGetMemberSerializationInfo(memberName, serializationInfo) =
-//             if Array.exists (fun (el: PropertyInfo) -> el.Name = memberName) fields then
-//                 let mm = classMap.GetMemberMap(memberName)
-//                 serializationInfo <- new BsonSerializationInfo(mm.ElementName, mm.GetSerializer(), mm.MemberType)
-//                 true
-//             else
-//                 false
+     interface IBsonDocumentSerializer with
+         member x.TryGetMemberSerializationInfo(memberName, serializationInfo) =
+             if Array.exists (fun (el: PropertyInfo) -> el.Name = memberName) fields then
+                 let mm = classMap.GetMemberMap(memberName)
+                 serializationInfo <- BsonSerializationInfo(mm.ElementName, mm.GetSerializer(), mm.MemberType)
+                 true
+             else
+                 false
 
 type DiscriminatedUnionSerializer<'t>() =
     inherit SerializerBase<'t>()
@@ -173,7 +165,8 @@ type DiscriminatedUnionSerializer<'t>() =
         BsonSerializer.LookupSerializer(t).Deserialize(context, args)
 
     let serBy context args t v =
-        BsonSerializer.LookupSerializer(t).Serialize(context, args, v)
+        let ser = BsonSerializer.LookupSerializer(t)
+        ser.Serialize(context, args, v)
 
     let readItems context args types =
         types
@@ -299,9 +292,9 @@ type FSharpTypeSerializationProvider() =
             elif IsUnion objType then
                 typedefof<DiscriminatedUnionSerializer<_>>.MakeGenericType(objType)
                 |> createSerializer
-            // elif IsRecord objType then
-            //     typedefof<RecordSerializer<_>>.MakeGenericType(objType)
-            //     |> createSerializer
+            elif IsRecord objType then
+                typedefof<RecordSerializer<_>>.MakeGenericType(objType)
+                |> createSerializer
             else
                 null
 
