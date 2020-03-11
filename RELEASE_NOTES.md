@@ -1,3 +1,7 @@
+#### 0.0.5-beta - 11 march 2020
+
+* Fix problems with Record types in Union types
+
 #### 0.0.4-beta - 25 Juny 2018
 
 * Support netstandard2.0
